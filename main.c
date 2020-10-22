@@ -55,6 +55,8 @@ void get_surrounding(struct point p);
 
 int distance(struct point p1, struct point p2);
 
+void shoot(int directionx, int directiony);
+
 bool game_over = false;
 
 struct point player;
@@ -64,6 +66,9 @@ struct point pit1, pit2;
 
 char status_text[100] = {0};
 int board[HEIGHT][WIDTH];
+
+int arrows = 5;
+bool shooting_mode = false;
 
 int main()
 {
@@ -99,7 +104,7 @@ int main()
     //board[bat1.y][bat1.x] = BAT;
 
     while (!game_over) {
-        system("clear");
+        //system("clear");
         draw_board(board);
         get_surrounding(player);
         printf("%s\n", status_text);
@@ -112,20 +117,46 @@ int main()
             getchar();
             switch(getchar()) {
                 case 'A':
-                    player.y -= 1;
+                    if (shooting_mode) {
+                        shoot(0, -1);
+                    } else {
+                        player.y -= 1;
+                    }
                     break;
                 case 'B':
-                    player.y += 1;
+                    if (shooting_mode) {
+                        shoot(0, 1);
+                    } else {
+                        player.y += 1;
+                    }
                     break;
                 case 'C':
-                    player.x += 1;
+                    if (shooting_mode) {
+                        shoot(1, 0);
+                    } else {
+                        player.x += 1;
+                    }
                     break;
                 case 'D':
-                    player.x -= 1;
+                    if (shooting_mode) {
+                        shoot(-1, 0);
+                    } else {
+                        player.x -= 1;
+                    }
                     break;
             }
             wrap(&player);
             board[player.y][player.x] = calculate_new_tile(board, player.x, player.y);
+        } else if (getchar() == 'S' || getchar() == 's') {
+            printf("working");
+            if (arrows == 0) {
+                strcpy(status_text, "You don't have any arrows.");
+                continue;
+            } else {
+                strcpy(status_text, "Which way?");
+                continue;
+                //shooting_mode = true;
+            }
         }
 
         system ("/bin/stty cooked");
@@ -279,4 +310,12 @@ char get_map_tile(int i) {
         break;
     }
     return temp;
+}
+
+void shoot (int directionx, int directiony) {
+    shooting_mode = false;
+    printf("%d %d", directionx, directiony);
+    if (player.x + directionx == wumpus.x && player.y + directiony == wumpus.y) {
+        strcpy(status_text, "You got the Wumpus!");
+    }
 }
